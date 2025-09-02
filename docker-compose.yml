@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  takserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tak-server
+    ports:
+      - "8443:8443"    # HTTPS API
+      - "8089:8089"    # TLS Input
+      - "8087:8087"    # TCP Input
+      - "5432:5432"    # PostgreSQL (optional external access)
+    volumes:
+      - tak_data:/opt/takserver/tak-server/src/takserver-core/files
+      - tak_logs:/opt/takserver/tak-server/src/takserver-core/logs
+      - postgres_data:/var/lib/postgresql/14/main
+    environment:
+      - TAK_USER=tak
+      - TAK_DB=cot
+      - TAK_PASSWORD=tak123
+      - POSTGRES_VERSION=14
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-k", "https://localhost:8443/health", "||", "exit", "1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    networks:
+      - tak_network
+
+volumes:
+  tak_data:
+    driver: local
+  tak_logs:
+    driver: local
+  postgres_data:
+    driver: local
+
+networks:
+  tak_network:
+    driver: bridge

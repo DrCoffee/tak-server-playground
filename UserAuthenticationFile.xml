@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<authUsers xmlns="http://bbn.com/marti/xml/config">
+    <!-- Default administrator account -->
+    <user identifier="admin" password="admin" groupList="__ANON__"/>
+    
+    <!-- Example additional users (uncomment and modify as needed) -->
+    <!--
+    <user identifier="user1" password="password1" groupList="Group1"/>
+    <user identifier="user2" password="password2" groupList="Group2"/>
+    <user identifier="readonly" password="readonly" groupList="ReadOnly"/>
+    -->
+</authUsers>
