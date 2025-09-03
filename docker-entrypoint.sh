@@ -13,7 +13,7 @@ POSTGRES_VERSION=${POSTGRES_VERSION:-14}
 
 # Configuration paths
 TAK_HOME="/opt/takserver/tak-server/src/takserver-core"
-JAR_FILE=$(find /opt/takserver/tak-server/src -name "takserver-core-*.war" | head -1)
+JAR_FILE=$(find /opt/takserver/tak-server/src -name "takserver-core-*.jar" | head -1)
 
 cd "$TAK_HOME"
 
@@ -61,6 +61,7 @@ start_tak_service() {
     echo "Starting TAK Server $service_name service..."
     
     java -server -Xmx$memory $JDK_JAVA_OPTIONS \
+        -Dfile.encoding=UTF-8 \
         -Dspring.profiles.active=$profile,duplicatelogs \
         -Dlogging.level.com.bbn.marti=INFO \
         -jar "$JAR_FILE" > logs/$service_name.log 2>&1 &
@@ -76,18 +77,22 @@ start_tak_service() {
 wait_for_port() {
     local port=$1
     local service=$2
-    local timeout=${3:-60}
+    local timeout=${3:-300}  # Increased timeout to 5 minutes for TAK Server
     
-    echo "Waiting for $service to be ready on port $port..."
+    echo "Waiting for $service to be ready on port $port (timeout: ${timeout}s)..."
     for i in $(seq 1 $timeout); do
-        if lsof -i :$port &> /dev/null; then
+        if timeout 5 lsof -i :$port &> /dev/null; then
             echo "$service is ready on port $port"
             return 0
+        fi
+        if [ $((i % 30)) -eq 0 ]; then
+            echo "Still waiting for $service... (${i}/${timeout}s elapsed)"
         fi
         sleep 1
     done
     
-    echo "Timeout waiting for $service on port $port"
+    echo "Warning: Timeout waiting for $service on port $port after ${timeout}s"
+    echo "Service may still be starting up. Check logs: docker exec <container> tail -f logs/$service.log"
     return 1
 }
 
@@ -112,11 +117,11 @@ monitor_services() {
                             ;;
                         messaging)
                             start_tak_service "messaging" "messaging" "2048m"
-                            wait_for_port 8089 "messaging"
+                            wait_for_port 8087 "messaging"
                             ;;
                         api)
                             start_tak_service "api" "api" "1024m"
-                            wait_for_port 8443 "api"
+                            wait_for_port 8080 "api"
                             ;;
                     esac
                 fi
@@ -164,13 +169,20 @@ sleep 3
 
 # Start TAK Server services in order
 start_tak_service "config" "config" "512m"
-sleep 5
+sleep 10  # Give config service more time to initialize
 
 start_tak_service "messaging" "messaging" "2048m"
-wait_for_port 8089 "messaging" 60
+# Don't block on messaging port - let it start in background
+echo "Messaging service started. Waiting briefly before starting API service..."
+sleep 20
 
 start_tak_service "api" "api" "1024m"
-wait_for_port 8443 "api" 60
+
+# Wait for services with timeout but don't fail the container startup
+echo ""
+echo "Services started. Checking readiness (this may take several minutes)..."
+wait_for_port 8087 "messaging" 300 || echo "Messaging service still starting..."
+wait_for_port 8080 "api" 300 || echo "API service still starting..."
 
 echo ""
 echo "TAK Server container startup complete!"
@@ -179,12 +191,12 @@ echo ""
 echo "Services running:"
 echo "  - PostgreSQL: localhost:5432"
 echo "  - TAK Configuration: Running"
-echo "  - TAK Messaging: localhost:8089 (TLS), localhost:8087 (TCP)"
-echo "  - TAK API: https://localhost:8443"
+echo "  - TAK Messaging: localhost:8087 (TCP)"
+echo "  - TAK API: http://localhost:8080"
 echo ""
 echo "Access points:"
-echo "  - Web UI: https://localhost:8443"
-echo "  - Swagger API: https://localhost:8443/swagger-ui.html"
+echo "  - Web UI: http://localhost:8080"
+echo "  - Swagger API: http://localhost:8080/swagger-ui.html"
 echo "  - Default credentials: admin/admin"
 echo ""
 echo "Database connection:"

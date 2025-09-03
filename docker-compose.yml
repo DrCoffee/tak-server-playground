@@ -7,8 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: tak-server
     ports:
-      - "8443:8443"    # HTTPS API
-      - "8089:8089"    # TLS Input
+      - "8080:8080"    # HTTP API
       - "8087:8087"    # TCP Input
       - "5432:5432"    # PostgreSQL (optional external access)
     volumes:

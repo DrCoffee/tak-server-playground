@@ -1,94 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Configuration xmlns="http://bbn.com/marti/xml/config">
     <network>
-        <!-- TLS Input for secure client connections -->
-        <input _name="stdssl" auth="file" port="8089" protocol="tls"/>
-        <!-- TCP Input for insecure client connections -->
-        <input _name="stdtcp" port="8087" protocol="tcp"/>
-        <!-- HTTPS API endpoint -->
-        <input _name="httpsapi" auth="file" port="8443" protocol="https"/>
+        <input _name="stdtcp" protocol="tcp" port="8087"/>
+        <input _name="httpapi" protocol="http" port="8080"/>
     </network>
+    
+    <connectors>
+        <connector port="8087" clientAuth="false"/>
+        <connector port="8080" clientAuth="false"/>
+    </connectors>
     
     <auth>
         <File location="UserAuthenticationFile.xml"/>
     </auth>
     
-    <!-- Database configuration -->
     <repository enable="true" numDbConnections="16">
         <connection url="jdbc:postgresql://localhost:5432/cot" username="tak" password="tak123"/>
     </repository>
     
-    <!-- SSL/TLS configuration -->
+    <filter>
+        <flowtag enable="false" text=""/>
+    </filter>
+    
+    <buffer>
+        <latestSA enable="true"/>
+    </buffer>
+    
+    <dissemination smartRetry="false"/>
+    
     <security>
         <tls keystore="files/certs/takserver.jks" keystorePass="atakatak" 
              truststore="files/certs/takserver.jks" truststorePass="atakatak"/>
     </security>
     
-    <!-- Federation (disabled for basic setup) -->
     <federation>
-        <federationserver enable="false"/>
+        <federationserver enable="false" webBaseUrl="http://localhost:8080"/>
     </federation>
-    
-    <!-- Plugins -->
-    <plugins/>
-    
-    <!-- Clustering (disabled for single container) -->
-    <cluster/>
-    
-    <!-- Video streaming (disabled for basic setup) -->
-    <vbm enabled="false"/>
-    
-    <!-- Repeater (disabled for basic setup) -->
-    <repeater enabled="false"/>
-    
-    <!-- Message filtering -->
-    <filter>
-        <flowtag enable="false" text=""/>
-    </filter>
-    
-    <!-- Message buffering -->
-    <buffer>
-        <latestSA enable="true"/>
-        <queue>
-            <priority>5</priority>
-        </queue>
-    </buffer>
-    
-    <!-- Message dissemination -->
-    <dissemination smartRetry="false"/>
-    
-    <!-- Certificate signing configuration -->
-    <certificateSigning CA="TAKServerSigningCA">
-        <certificateConfig>
-            <nameEntries>
-                <nameEntry name="O" value="TAK"/>
-                <nameEntry name="OU" value="TAK"/>
-            </nameEntries>
-        </certificateConfig>
-        
-        <TAKServerSigningCA validity="30" renewThreshold="7">
-            <nameEntries>
-                <nameEntry name="CN" value="TAK Server Signing CA"/>
-                <nameEntry name="O" value="TAK"/>
-                <nameEntry name="OU" value="TAK"/>
-            </nameEntries>
-        </TAKServerSigningCA>
-        
-        <TAKServerRootCA validity="3650">
-            <nameEntries>
-                <nameEntry name="CN" value="TAK Server Root CA"/>
-                <nameEntry name="O" value="TAK"/>
-                <nameEntry name="OU" value="TAK"/>
-            </nameEntries>
-        </TAKServerRootCA>
-    </certificateSigning>
-    
-    <!-- Logging configuration -->
-    <logging>
-        <loggers>
-            <logger name="com.bbn.marti" level="INFO"/>
-            <logger name="org.springframework" level="WARN"/>
-            <logger name="org.hibernate" level="WARN"/>
-        </loggers>
-    </logging>
 </Configuration>

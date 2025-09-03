@@ -27,16 +27,22 @@ RUN apt-get update && apt-get install -y \
 # Create application directory
 WORKDIR /opt/takserver
 
-# Clone and build TAK Server
-RUN git clone https://github.com/TAK-Product-Center/Server.git tak-server
+# Clone and build TAK Server (using stable 5.1 release)
+RUN git clone https://github.com/TAK-Product-Center/Server.git tak-server && \
+    cd tak-server && \
+    git checkout 5.1-RELEASE-8
 
-# Set Java options for Java 17 compatibility
-ENV JDK_JAVA_OPTIONS="--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
+# Set Java options for Java 17 compatibility and UTF-8 encoding
+ENV JDK_JAVA_OPTIONS="--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED -Dfile.encoding=UTF-8"
 
-# Build TAK Server
+# Set locale for proper character encoding
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
+# Build TAK Server with proper encoding
 WORKDIR /opt/takserver/tak-server/src
 RUN chmod +x gradlew && \
-    ./gradlew clean bootWar bootJar shadowJar
+    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8" ./gradlew clean bootWar bootJar shadowJar
 
 # Setup PostgreSQL
 RUN service postgresql start && \
@@ -60,9 +66,9 @@ COPY supervisord.conf /etc/supervisor/conf.d/
 COPY CoreConfig.xml /opt/takserver/tak-server/src/takserver-core/
 COPY UserAuthenticationFile.xml /opt/takserver/tak-server/src/takserver-core/
 
-# Create certificates directory and generate basic certificates
+# Create minimal certificate to satisfy JWK requirements (even though using HTTP)
 RUN mkdir -p files/certs && \
-    keytool -genkeypair -v \
+    keytool -genkeypair -noprompt \
         -alias takserver \
         -dname "CN=takserver,O=TAK,C=US" \
         -keystore files/certs/takserver.jks \

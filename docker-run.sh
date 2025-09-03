@@ -41,8 +41,7 @@ start_container() {
         echo "Creating and starting new container..."
         docker run -d \
             --name ${CONTAINER_NAME} \
-            -p 8443:8443 \
-            -p 8089:8089 \
+            -p 8080:8080 \
             -p 8087:8087 \
             -p 5432:5432 \
             -v tak_data:/opt/takserver/tak-server/src/takserver-core/files \
@@ -60,7 +59,7 @@ start_container() {
     
     # Wait for API to be ready
     for i in {1..120}; do
-        if docker exec ${CONTAINER_NAME} lsof -i :8443 &> /dev/null; then
+        if docker exec ${CONTAINER_NAME} lsof -i :8080 &> /dev/null; then
             echo "TAK Server API is ready!"
             break
         fi
@@ -104,23 +103,20 @@ show_status() {
         echo "Service Health:"
         echo "==============="
         
-        # Check API
-        if docker exec ${CONTAINER_NAME} lsof -i :8443 &> /dev/null; then
-            echo "HTTPS API (8443): RUNNING"
+        # Check API with timeout
+        if timeout 5 docker exec ${CONTAINER_NAME} lsof -i :8080 &> /dev/null; then
+            echo "HTTP API (8080): RUNNING"
+        elif timeout 2 docker exec ${CONTAINER_NAME} pgrep -f "spring.profiles.active=api" &> /dev/null; then
+            echo "HTTP API (8080): STARTING (service running, port not bound yet)"
         else
-            echo "HTTPS API (8443): NOT RUNNING"
+            echo "HTTP API (8080): NOT RUNNING"
         fi
         
-        # Check TLS Input
-        if docker exec ${CONTAINER_NAME} lsof -i :8089 &> /dev/null; then
-            echo "TLS Input (8089): RUNNING"
-        else
-            echo "TLS Input (8089): NOT RUNNING"
-        fi
-        
-        # Check TCP Input
-        if docker exec ${CONTAINER_NAME} lsof -i :8087 &> /dev/null; then
+        # Check TCP Input with timeout
+        if timeout 5 docker exec ${CONTAINER_NAME} lsof -i :8087 &> /dev/null; then
             echo "TCP Input (8087): RUNNING"
+        elif timeout 2 docker exec ${CONTAINER_NAME} pgrep -f "spring.profiles.active=messaging" &> /dev/null; then
+            echo "TCP Input (8087): STARTING (service running, port not bound yet)"
         else
             echo "TCP Input (8087): NOT RUNNING"
         fi
@@ -135,13 +131,12 @@ show_status() {
         echo ""
         echo "Access Information:"
         echo "=================="
-        echo "Web UI: https://localhost:8443"
-        echo "Swagger API: https://localhost:8443/swagger-ui.html"
+        echo "Web UI: http://localhost:8080"
+        echo "Swagger API: http://localhost:8080/swagger-ui.html"
         echo "Default credentials: admin/admin"
         echo ""
         echo "Client Connections:"
-        echo "TLS (secure): localhost:8089"
-        echo "TCP (insecure): localhost:8087"
+        echo "TCP: localhost:8087"
         echo ""
         echo "Database Access:"
         echo "Host: localhost:5432"

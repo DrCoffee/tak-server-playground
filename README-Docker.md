@@ -34,7 +34,7 @@ This setup provides TAK Server and PostgreSQL in a single Docker container for e
 ### Management Scripts
 - `docker-build.sh` - Build Docker image
 - `docker-run.sh` - Manage container runtime
-- `setup-tak-server.sh` - Complete setup (legacy)
+- `setup-tak-server.sh` - Complete setup (local)
 
 ## Usage
 
