@@ -1,0 +1,54 @@
+FROM eclipse-temurin:17
+RUN apt update && apt-get install -y emacs-nox net-tools patch unzip
+
+# Copy TAK Server source for building
+COPY Server /opt/takserver-src
+
+# Build TAK Server
+WORKDIR /opt/takserver-src/src
+RUN chmod +x gradlew && \
+    JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8" ./gradlew clean bootWar bootJar shadowJar
+
+# Set up TAK Server directory structure
+RUN mkdir -p /opt/tak/lib /opt/tak/scripts /opt/tak/webapps /opt/tak/logs /opt/tak/certs/files
+
+# List what was actually built for debugging
+RUN echo "=== Built artifacts ===" && \
+    find . -name "*.war" -o -name "*.jar" | grep build/libs | sort
+
+# Copy built artifacts to expected locations with more flexible matching
+RUN find . -name "*takserver*.war" -path "*/build/libs/*" -exec cp {} /opt/tak/takserver.war \; && \
+    echo "Copied takserver.war" || echo "No takserver.war found"
+
+# Copy retention service if it exists
+RUN find . -name "*retention*.jar" -path "*/build/libs/*" -exec cp {} /opt/tak/takserver-retention.jar \; && \
+    echo "Copied retention jar" || echo "No retention jar found"
+
+# Copy plugin manager if it exists  
+RUN find . -name "*plugin-manager*.jar" -path "*/build/libs/*" -exec cp {} /opt/tak/takserver-pm.jar \; && \
+    echo "Copied plugin manager jar" || echo "No plugin manager jar found"
+
+# Copy schema manager
+RUN find . -name "*schemamanager*.jar" -o -name "*SchemaManager*.jar" -path "*/build/libs/*" -exec cp {} /opt/tak/SchemaManager.jar \; && \
+    echo "Copied schema manager jar" || echo "No schema manager jar found"
+
+# Copy scripts and configuration
+RUN cp -r takserver-core/scripts/* /opt/tak/scripts/ && \
+    cp takserver-core/example/CoreConfig.example.xml /opt/tak/CoreConfig.xml && \
+    chmod +x /opt/tak/scripts/*.sh /opt/tak/scripts/certs/*.sh
+
+# Create setenv.sh with environment variables
+RUN echo '#!/bin/bash' > /opt/tak/setenv.sh && \
+    echo 'export CONFIG_MAX_HEAP=512' >> /opt/tak/setenv.sh && \
+    echo 'export MESSAGING_MAX_HEAP=2048' >> /opt/tak/setenv.sh && \
+    echo 'export API_MAX_HEAP=2048' >> /opt/tak/setenv.sh && \
+    echo 'export RETENTION_MAX_HEAP=512' >> /opt/tak/setenv.sh && \
+    echo 'export PLUGIN_MANAGER_MAX_HEAP=512' >> /opt/tak/setenv.sh && \
+    chmod +x /opt/tak/setenv.sh
+
+# Copy our startup script
+COPY tak/configureInDocker.sh /opt/tak/configureInDocker.sh
+RUN chmod +x /opt/tak/configureInDocker.sh
+
+WORKDIR /opt/tak
+ENTRYPOINT ["/bin/bash", "-c", "/opt/tak/configureInDocker.sh init"]

@@ -1,0 +1,9 @@
+FROM eclipse-temurin:17-jammy
+RUN apt update && apt-get install -y emacs-nox net-tools netcat vim nmon python3-lxml
+
+# Copy the pre-built TAK Server directory structure
+COPY tak-built /opt/tak
+
+# Set working directory and use simplified entrypoint
+WORKDIR /opt/tak
+ENTRYPOINT ["/bin/bash", "/opt/tak/docker_entrypoint_simple.sh"]

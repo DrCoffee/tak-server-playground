@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  tak-server:
+    image: pvarki/tak-server-dist:5.1-RELEASE-11
+    container_name: tak-server
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+      - "8089:8089"
+      - "8087:8087"
+    environment:
+      - POSTGRES_PASSWORD=tak123
+      - CA_NAME=tak-ca
+      - CA_PASS=atakatak
+      - STATE=VA
+      - CITY=Vienna
+      - ORGANIZATION=TAK
+      - ORGANIZATIONAL_UNIT=TAK-Server
+      - TAKSERVER_CERT_PASS=atakatak
+      - ADMIN_CERT_NAME=admin
+      - ADMIN_CERT_PASS=atakatak
+    volumes:
+      - tak_data:/opt/tak/data
+      - tak_logs:/opt/tak/logs
+    networks:
+      - taknet
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: tak-postgres
+    environment:
+      - POSTGRES_DB=cot
+      - POSTGRES_USER=martiuser
+      - POSTGRES_PASSWORD=tak123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - taknet
+
+networks:
+  taknet:
+    driver: bridge
+
+volumes:
+  tak_data:
+  tak_logs:
+  postgres_data:

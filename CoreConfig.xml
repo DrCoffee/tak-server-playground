@@ -1,22 +1,27 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Configuration xmlns="http://bbn.com/marti/xml/config">
-    <network>
-        <input _name="stdtcp" protocol="tcp" port="8087"/>
-        <input _name="httpapi" protocol="http" port="8080"/>
+    <network multicastTTL="5">
+        <input _name="stdtcp" protocol="tcp" port="8087" auth="anonymous"/>
+        <input _name="stdssl" protocol="tls" port="8089" auth="x509"/>
+        
+        <!-- web connectors -->
+        <connector port="8080" tls="false" _name="http_plaintext"/>
+        <connector port="8443" _name="https"/>
     </network>
-    
-    <connectors>
-        <connector port="8087" clientAuth="false"/>
-        <connector port="8080" clientAuth="false"/>
-    </connectors>
     
     <auth>
         <File location="UserAuthenticationFile.xml"/>
     </auth>
     
-    <repository enable="true" numDbConnections="16">
-        <connection url="jdbc:postgresql://localhost:5432/cot" username="tak" password="tak123"/>
+    <submission ignoreStaleMessages="false" validateXml="false"/>
+    
+    <subscription reloadPersistent="false"/>
+    
+    <repository enable="true" numDbConnections="8">
+        <connection url="jdbc:postgresql://localhost:5432/cot" username="tak" password="tak123" />
     </repository>
+    
+    <dissemination smartRetry="false" />
     
     <filter>
         <flowtag enable="false" text=""/>
@@ -26,14 +31,15 @@
         <latestSA enable="true"/>
     </buffer>
     
-    <dissemination smartRetry="false"/>
-    
     <security>
-        <tls keystore="files/certs/takserver.jks" keystorePass="atakatak" 
-             truststore="files/certs/takserver.jks" truststorePass="atakatak"/>
+        <tls context="TLSv1.2"
+            keymanager="SunX509"
+            keystore="PKCS12" keystoreFile="certs/files/takserver.jks" keystorePass="atakatak"
+            truststore="PKCS12" truststoreFile="certs/files/truststore-root.jks" truststorePass="atakatak">
+        </tls>
     </security>
     
     <federation>
-        <federationserver enable="false" webBaseUrl="http://localhost:8080"/>
+        <federationserver enable="false" webBaseUrl="https://localhost:8443"/>
     </federation>
 </Configuration>

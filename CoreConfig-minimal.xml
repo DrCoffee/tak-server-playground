@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration xmlns="http://bbn.com/marti/xml/config"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="CoreConfig.xsd">
+<Configuration xmlns="http://bbn.com/marti/xml/config">
     <network multicastTTL="5">
         <input _name="stdtcp" protocol="tcp" port="8087" auth="anonymous"/>
         
-        <!-- web connectors -->
+        <!-- web connectors - only HTTP -->
         <connector port="8080" tls="false" _name="http_plaintext"/>
-        <connector port="8443" _name="https"/>
     </network>
     
     <auth>
@@ -16,27 +13,20 @@
     
     <submission ignoreStaleMessages="false" validateXml="false"/>
     
-    <subscription reloadPersistent="false">
-    </subscription>
+    <subscription reloadPersistent="false"/>
     
-    <repository enable="true" numDbConnections="16" primaryKeyBatchSize="500" insertionBatchSize="500">
+    <repository enable="true" numDbConnections="4">
         <connection url="jdbc:postgresql://localhost:5432/cot" username="tak" password="tak123" />
     </repository>
-    
-    <repeater enable="true" periodMillis="3000" staleDelayMillis="15000">
-    </repeater>
     
     <dissemination smartRetry="false" />
     
     <filter>
         <flowtag enable="false" text=""/>
-        <!-- <streamingbroker enable="false"/> -->
-        <scrubber enable="false" action="overwrite"/>
     </filter>
     
     <buffer>
-        <latestSA enable="true"/>
-        <queue/>
+        <latestSA enable="false"/>
     </buffer>
     
     <security>
@@ -46,8 +36,4 @@
             truststore="JKS" truststoreFile="files/certs/takserver.jks" truststorePass="atakatak">
         </tls>
     </security>
-    
-    <!-- Federation disabled -->
-    <!-- <federation>
-    </federation> -->
 </Configuration>
