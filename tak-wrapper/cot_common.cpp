@@ -58,10 +58,14 @@ std::string CoTObject::to_xml() const {
     xml << "       time=\"" << format_timestamp(current_time) << "\"\n";
     xml << "       start=\"" << format_timestamp(current_time) << "\"\n";
     xml << "       stale=\"" << format_timestamp(stale_time) << "\">\n";
-    xml << "  <point lat=\"" << std::fixed << std::setprecision(6) << latitude << "\"\n";
-    xml << "         lon=\"" << std::fixed << std::setprecision(6) << longitude << "\"\n";
-    xml << "         hae=\"" << std::fixed << std::setprecision(2) << hae << "\"\n";
-    xml << "         ce=\"10.0\" le=\"10.0\"/>\n";
+    xml << "  <point\n";
+    xml << "    lat=\"" << std::fixed << std::setprecision(6) << latitude << "\"\n";
+    xml << "    lon=\"" << std::fixed << std::setprecision(6) << longitude << "\"\n";
+    xml << "    ce=\"9999999\"\n";
+    xml << "    hae=\"" << std::fixed << std::setprecision(2) << hae << "\"\n";
+    xml << "    le=\"9999999\"\n";
+    xml << "  >\n";
+    xml << "  </point>\n";
     xml << "  <detail>\n";
     xml << "    <contact callsign=\"" << callsign << "\"/>\n";
     xml << "    <__group name=\"" << team << "\" role=\"Team Member\"/>\n";

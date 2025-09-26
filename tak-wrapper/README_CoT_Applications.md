@@ -47,9 +47,22 @@ sudo dnf install gcc-c++ openssl-devel cmake make
 
 ## Building
 
-### Quick Build (Makefile)
+### CMake Build (Recommended)
 ```bash
-# Build both applications
+# Create build directory and build
+mkdir build
+cd build
+cmake ..
+make
+
+# Executables will be in build/ directory
+./cot_injector --help
+./cot_listener --help
+```
+
+### Quick Build (Legacy Makefile)
+```bash
+# Build both applications (executables in root directory)
 make
 
 # Build individually
@@ -60,12 +73,6 @@ make cot_listener
 make clean
 ```
 
-### CMake Build
-```bash
-mkdir build && cd build
-cmake ..
-make
-```
 
 ## Applications Overview
 
@@ -84,6 +91,8 @@ Connects to TAK Server and displays incoming CoT messages in real-time with:
 
 ## Usage
 
+**Note:** The convenience scripts (`run_cot_*.sh`) automatically use executables from the `build/` directory and handle certificate configuration. For direct usage, use `./build/cot_injector` or `./build/cot_listener` after building with CMake.
+
 ### CoT Injector Examples
 
 ```bash
@@ -93,12 +102,12 @@ Connects to TAK Server and displays incoming CoT messages in real-time with:
 # Send multiple batches with timing
 ./run_cot_injector.sh --count 5 --interval 2.0
 
-# Direct usage with full parameters
-./cot_injector --cert tak/certs/files/admin.pem \
-               --key tak/certs/files/admin.key \
-               --ca tak/certs/files/ca.pem \
-               --passphrase "atakatak" \
-               --count 3 --interval 1.0
+# Direct usage with full parameters (after CMake build)
+./build/cot_injector --cert tak/certs/files/admin.pem \
+                     --key tak/certs/files/admin.key \
+                     --ca tak/certs/files/ca.pem \
+                     --passphrase "atakatak" \
+                     --count 3 --interval 1.0
 ```
 
 ### CoT Listener Examples

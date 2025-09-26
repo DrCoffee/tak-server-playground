@@ -75,8 +75,22 @@ echo "Target: $HOST:$PORT"
 echo "Count: $COUNT, Interval: $INTERVAL"
 echo ""
 
+# Check if build directory and executable exist
+if [[ ! -d "build" ]]; then
+    echo "Error: build/ directory not found. Please run CMake build first:"
+    echo "  mkdir build && cd build && cmake .. && make"
+    exit 1
+fi
+
+if [[ ! -f "build/cot_injector" ]]; then
+    echo "Error: cot_injector executable not found in build/ directory"
+    echo "Please run CMake build first:"
+    echo "  mkdir build && cd build && cmake .. && make"
+    exit 1
+fi
+
 # Run the CoT injector
-./cot_injector \
+build/cot_injector \
     --host "$HOST" \
     --port "$PORT" \
     --cert "$ADMIN_CERT" \

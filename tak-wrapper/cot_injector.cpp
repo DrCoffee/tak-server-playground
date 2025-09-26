@@ -43,18 +43,36 @@ public:
     }
 };
 
+// Generate random coordinates within Australia
+std::pair<double, double> generate_random_australia_coords() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    
+    // Australia bounds (approximate)
+    std::uniform_real_distribution<double> lat_dist(-44.0, -10.0);  // South to North
+    std::uniform_real_distribution<double> lon_dist(113.0, 154.0);  // West to East
+    
+    return std::make_pair(lat_dist(gen), lon_dist(gen));
+}
+
 std::vector<CoTCommon::CoTObject> create_sample_units() {
     std::vector<CoTCommon::CoTObject> units;
     
+    // Generate random coordinates for each unit
+    auto alpha_coords = generate_random_australia_coords();
+    auto bravo_coords = generate_random_australia_coords();
+    auto enemy_coords = generate_random_australia_coords();
+    auto neutral_coords = generate_random_australia_coords();
+    
     // Friendly units
-    units.emplace_back("a-f-G-U-C", "h-g-i-g-o", 39.7392, -104.9903, 1609.0, "Alpha-1", "Blue");
-    units.emplace_back("a-f-G-E-V-C", "h-g-i-g-o", 39.7292, -104.9803, 1609.0, "Bravo-2", "Blue");
+    units.emplace_back("a-f-G-U-C", "h-g-i-g-o", alpha_coords.first, alpha_coords.second, 100.0, "Alpha-1", "Blue");
+    units.emplace_back("a-f-G-E-V-C", "h-g-i-g-o", bravo_coords.first, bravo_coords.second, 150.0, "Bravo-2", "Blue");
     
     // Hostile unit
-    units.emplace_back("a-h-G-U-C", "h-g-i-g-o", 39.7192, -104.9703, 1609.0, "Enemy-1", "Red");
+    units.emplace_back("a-h-G-U-C", "h-g-i-g-o", enemy_coords.first, enemy_coords.second, 200.0, "Enemy-1", "Red");
     
     // Neutral unit  
-    units.emplace_back("a-n-G-U-C", "h-g-i-g-o", 39.7492, -105.0003, 1609.0, "Neutral-1", "White");
+    units.emplace_back("a-n-G-U-C", "h-g-i-g-o", neutral_coords.first, neutral_coords.second, 75.0, "Neutral-1", "White");
     
     return units;
 }

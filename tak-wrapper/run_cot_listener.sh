@@ -91,8 +91,22 @@ fi
 echo "Press Ctrl+C to stop"
 echo ""
 
+# Check if build directory and executable exist
+if [[ ! -d "build" ]]; then
+    echo "Error: build/ directory not found. Please run CMake build first:"
+    echo "  mkdir build && cd build && cmake .. && make"
+    exit 1
+fi
+
+if [[ ! -f "build/cot_listener" ]]; then
+    echo "Error: cot_listener executable not found in build/ directory"
+    echo "Please run CMake build first:"
+    echo "  mkdir build && cd build && cmake .. && make"
+    exit 1
+fi
+
 # Run the CoT listener
-./cot_listener \
+build/cot_listener \
     --host "$HOST" \
     --port "$PORT" \
     --cert "$ADMIN_CERT" \

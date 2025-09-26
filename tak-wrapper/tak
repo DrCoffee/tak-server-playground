@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# Simple TAK Server Management Wrapper
+# Provides quick commands for common operations
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MANAGE_SCRIPT="$SCRIPT_DIR/manage_takserver.sh"
+
+case "${1:-help}" in
+    "up"|"start")
+        "$MANAGE_SCRIPT" start
+        ;;
+    "down"|"stop")
+        "$MANAGE_SCRIPT" stop
+        ;;
+    "remove"|"rm")
+        "$MANAGE_SCRIPT" remove
+        ;;
+    "restart"|"reload")
+        "$MANAGE_SCRIPT" restart
+        ;;
+    "ps"|"status")
+        "$MANAGE_SCRIPT" status
+        ;;
+    "logs")
+        "$MANAGE_SCRIPT" logs "${2:-}"
+        ;;
+    "test"|"ping")
+        "$MANAGE_SCRIPT" test
+        ;;
+    "clean"|"cleanup")
+        "$MANAGE_SCRIPT" cleanup
+        ;;
+    "help"|"-h"|"--help")
+        echo "TAK Server Quick Commands"
+        echo ""
+        echo "Usage: $0 [COMMAND]"
+        echo ""
+        echo "Quick Commands:"
+        echo "  up, start       Start TAK server"
+        echo "  down, stop      Stop TAK server (preserves data)"  
+        echo "  remove, rm      Remove containers (preserve volumes)"
+        echo "  restart, reload Restart TAK server"
+        echo "  ps, status      Show container status"
+        echo "  logs [service]  Show logs"
+        echo "  test, ping      Test connectivity"
+        echo "  clean, cleanup  Clean up containers and volumes"
+        echo "  help           Show this help"
+        echo ""
+        echo "For more detailed options, use: $MANAGE_SCRIPT help"
+        ;;
+    *)
+        echo "Unknown command: $1"
+        echo "Use '$0 help' for available commands"
+        exit 1
+        ;;
+esac
