@@ -1,0 +1,49 @@
+# Build directories
+build/
+cmake-build-*/
+
+# Compiled executables
+cot_injector
+cot_listener
+
+# Static libraries
+*.a
+*.lib
+
+# Object files
+*.o
+*.obj
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Debug files
+*.pdb
+*.dSYM/
+
+# Installation test directories
+/tmp/test_install/
+
+takserver-docker-5.5-RELEASE-53.zip
+takserver-docker-5.5-RELEASE-53/

@@ -32,3 +32,6 @@ Thumbs.db
 tak-built/
 takserver.war
 takserver-retention.jar
+
+takserver-docker-5.5-RELEASE-53.zip
+takserver-docker-5.5-RELEASE-53/
