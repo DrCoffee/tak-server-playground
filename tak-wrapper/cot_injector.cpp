@@ -61,18 +61,47 @@ std::vector<CoTCommon::CoTObject> create_sample_units() {
     // Generate random coordinates for each unit
     auto alpha_coords = generate_random_australia_coords();
     auto bravo_coords = generate_random_australia_coords();
+    auto charlie_coords = generate_random_australia_coords();
     auto enemy_coords = generate_random_australia_coords();
     auto neutral_coords = generate_random_australia_coords();
+    auto aircraft_coords = generate_random_australia_coords();
     
-    // Friendly units
-    units.emplace_back("a-f-G-U-C", "h-g-i-g-o", alpha_coords.first, alpha_coords.second, 100.0, "Alpha-1", "Blue");
-    units.emplace_back("a-f-G-E-V-C", "h-g-i-g-o", bravo_coords.first, bravo_coords.second, 150.0, "Bravo-2", "Blue");
+    // Friendly infantry squad using SIDC  
+    units.emplace_back(
+        CoTCommon::MilStd2525::friendlyInfantry(CoTCommon::MilStd2525::Echelon::SQUAD),
+        alpha_coords.first, alpha_coords.second, 100.0, "Alpha-1", "Blue", "h-p-i"  // h-p-i = human-posted-internet
+    );
     
-    // Hostile unit
-    units.emplace_back("a-h-G-U-C", "h-g-i-g-o", enemy_coords.first, enemy_coords.second, 200.0, "Enemy-1", "Red");
+    // Friendly armor platoon using SIDC  
+    units.emplace_back(
+        CoTCommon::MilStd2525::generateSIDC(CoTCommon::MilStd2525::Affiliation::FRIEND, 
+                                           CoTCommon::MilStd2525::BattleDimension::LAND_UNIT,
+                                           CoTCommon::MilStd2525::Status::REALITY,
+                                           CoTCommon::MilStd2525::FunctionID::ARMOR,
+                                           CoTCommon::MilStd2525::Echelon::PLATOON),
+        bravo_coords.first, bravo_coords.second, 150.0, "Bravo-2", "Blue", "h-p-i"
+    );
     
-    // Neutral unit  
-    units.emplace_back("a-n-G-U-C", "h-g-i-g-o", neutral_coords.first, neutral_coords.second, 75.0, "Neutral-1", "White");
+    // Friendly medical unit using SIDC
+    units.emplace_back(
+        CoTCommon::MilStd2525::neutralMedical(),
+        charlie_coords.first, charlie_coords.second, 75.0, "Charlie-Med", "Blue", "h-p-i"
+    );
+    
+    // Hostile armor unit using SIDC
+    units.emplace_back(
+        CoTCommon::MilStd2525::hostileArmor(CoTCommon::MilStd2525::Echelon::COMPANY),
+        enemy_coords.first, enemy_coords.second, 200.0, "Enemy-1", "Red", "h-p-i"
+    );
+    
+    // Neutral unit using legacy constructor  
+    units.emplace_back("a-n-G-U-C", "h-p-i", neutral_coords.first, neutral_coords.second, 75.0, "Neutral-1", "White");
+    
+    // Friendly fighter aircraft using SIDC
+    units.emplace_back(
+        CoTCommon::MilStd2525::friendlyAircraft(CoTCommon::MilStd2525::FunctionID::FIGHTER),
+        aircraft_coords.first, aircraft_coords.second, 3000.0, "Eagle-1", "Blue", "h-p-i"
+    );
     
     return units;
 }
